@@ -1,0 +1,14 @@
+torch
+torchvision
+gradio
+scikit-image
+pytesseract
+augraphy
+pandas
+numpy<2
+Pillow
+pyyaml
+kaggle
+jupyter
+pymupdf
+opencv-python
