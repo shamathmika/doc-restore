@@ -33,5 +33,8 @@ checkpoints/
 # Weights & Biases
 wandb/
 
+# Augraphy internal cache (kept locally for performance, not needed in git)
+augraphy_cache/
+
 # Logs
 *.log

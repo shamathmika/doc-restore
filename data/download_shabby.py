@@ -31,7 +31,6 @@
 # =============================================================================
 
 import json
-import random as _random
 import time
 import urllib.request
 from pathlib import Path
@@ -40,24 +39,10 @@ import cv2
 import fitz          # PyMuPDF
 import numpy as np
 
-# ---------------------------------------------------------------------------
-# Compatibility patch — augraphy 8.2.6 + Python 3.12
-# ---------------------------------------------------------------------------
-# augraphy passes numpy.float64 values to random.randint() throughout several
-# modules (PaperFactory, inkgenerator, etc.). Python 3.12 made random.randint
-# strict about integer types, so this raises TypeError at runtime.
-# Patching once here at import time fixes all affected augmentations globally.
-# Note: using a named function (not a lambda) so Numba JIT compilation is
-# unaffected if any augmentation uses Numba internally.
-
-_orig_randint = _random.randint
-
-
-def _safe_randint(a, b):
-    return _orig_randint(int(a), int(b))
-
-
-_random.randint = _safe_randint
+# augment.py is the single source of truth for the degradation pipeline.
+# It also applies the Python 3.12 / random.randint compatibility patch at
+# import time, so no separate patch is needed here.
+from augment import apply_degradation, build_augmentation_pipeline
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -114,6 +99,8 @@ def download_shabby(
     print(f"\n[download_shabby] Mode : {mode_label}")
     print(f"[download_shabby] Output: {dest.resolve()}\n")
 
+    pipeline = build_augmentation_pipeline()
+
     total_generated = 0
     total_skipped   = 0
     failed_papers   = []
@@ -161,7 +148,7 @@ def download_shabby(
             cv2.imwrite(str(clean_out), img_bgr)
 
             # Generate and save degraded version
-            degraded = _apply_degradation(img_bgr)
+            degraded = apply_degradation(img_bgr, pipeline)
             cv2.imwrite(str(degraded_out), degraded)
 
             total_generated += 1
@@ -226,40 +213,6 @@ def _pdf_to_images(pdf_bytes: bytes, scale: float = 2.0) -> list:
 
     doc.close()
     return images
-
-
-def _apply_degradation(img: np.ndarray) -> np.ndarray:
-    """
-    Applies the Augraphy default pipeline to synthesise realistic document
-    degradation (ink bleed, stains, folds, photocopy artifacts, etc.).
-
-    Requires numpy < 2 (numpy 1.26.x). Install with:
-        pip install "numpy<2"
-
-    Args:
-        img: BGR uint8 numpy array (H x W x 3).
-
-    Returns:
-        Degraded BGR uint8 numpy array.
-    """
-    from augraphy import AugraphyPipeline
-    from augraphy.augmentations import (
-        BleedThrough, Brightness, ColorPaper, DirtyDrum,
-        Folding, InkBleed, Jpeg, LowInkPeriodicLines,
-        Markup, SubtleNoise,
-    )
-
-    # Custom pipeline — excludes PaperFactory (numpy.float64 → randint bug,
-    # Python 3.12) and BadPhotoCopy (Numba JIT incompatibility).
-    pipeline = AugraphyPipeline(
-        ink_phase   = [InkBleed(p=0.5), BleedThrough(p=0.4), LowInkPeriodicLines(p=0.3)],
-        paper_phase = [ColorPaper(p=0.4), Brightness(p=0.6)],
-        post_phase  = [DirtyDrum(p=0.4), SubtleNoise(p=0.5), Folding(p=0.3), Jpeg(p=0.3), Markup(p=0.2)],
-    )
-    result = pipeline(img)
-    if isinstance(result, dict):
-        result = result.get("output", result.get("augmented", img))
-    return result
 
 
 def _print_summary(
