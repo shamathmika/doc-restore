@@ -39,6 +39,20 @@ from torch.utils.data import DataLoader, Dataset
 from torchvision import transforms
 
 
+class ConditionalResize:
+    """Resizes a PIL image only if it is not already the target size."""
+
+    def __init__(self, size: tuple[int, int]):
+        self.size = size  # (H, W)
+        self._resize = transforms.Resize(size)
+
+    def __call__(self, img: Image.Image) -> Image.Image:
+        # PIL size is (W, H), target size is (H, W)
+        if img.size == (self.size[1], self.size[0]):
+            return img
+        return self._resize(img)
+
+
 class DocRestoreDataset(Dataset):
     """
     Dataset of clean/degraded document image pairs for DocRestore training.
@@ -102,7 +116,7 @@ def get_dataloader(csv_path, batch_size, shuffle, num_workers, transform=None):
     """
     if transform is None:
         transform = transforms.Compose([
-            transforms.Resize((256, 256)),
+            ConditionalResize((256, 256)),
             transforms.ToTensor(),
         ])
 
