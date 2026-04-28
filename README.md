@@ -4,6 +4,12 @@ An end-to-end deep learning system that restores degraded scanned and printed do
 
 ---
 
+## Problem Statement
+
+Scanned and photographed document images frequently suffer from degradations — ink bleed, paper fold marks, photocopy drum artifacts, uneven lighting, and JPEG compression — that reduce OCR accuracy and make documents difficult to read or archive. Existing general-purpose image restoration models are not optimized for the specific characteristics of text documents. DocRestore addresses this by training document-specific restoration models on synthetically degraded data, measurably improving both visual quality (PSNR, SSIM) and machine readability (OCR character error rate).
+
+---
+
 ## Team Members
 
 | Name | Email |
@@ -86,3 +92,50 @@ The paper list is in `data/arxiv_papers.json` — add more entries to grow the d
 
 Augraphy degradations applied: ink bleed, bleed-through, periodic ink lines,
 brightness variation, dirty drum stains, subtle noise, folding, JPEG artifacts, and markup.
+
+---
+
+## Next Steps
+
+- Train on larger arXiv PDF datasets to improve generalization across document styles
+- Explore diffusion-based restoration models (e.g., DocDiff) as an alternative backbone
+- Add domain adaptation to handle real-world scan artifacts not covered by Augraphy
+- Extend OCR evaluation to full-document word error rate (WER) in addition to CER
+- Investigate self-supervised pretraining on unlabeled scanned documents
+
+---
+
+## Project Structure
+
+```
+doc-restore/
+├── configs/          # Training configs (docres.yaml, nafnet.yaml)
+├── data/             # Data pipeline
+│   ├── augment.py        # Augraphy degradation — single source of truth
+│   ├── dataloader.py     # PyTorch Dataset and DataLoader factory
+│   ├── download_shabby.py  # arXiv PDF → clean/degraded pairs
+│   ├── download_noisy.py   # NoisyOffice dataset download
+│   ├── preprocess.py       # Resize and normalize images
+│   └── split.py            # Train / val / test CSV split
+├── demo/             # Gradio web demo
+│   ├── app.py            # Main Gradio app (Shamathmika)
+│   ├── inference.py      # Model loading and inference
+│   ├── image_panel.py    # Side-by-side image display component
+│   └── metrics_panel.py  # PSNR / SSIM / CER display component
+├── eval/             # Evaluation
+│   ├── run_eval.py       # Batch evaluation script
+│   └── error_analysis.ipynb  # Failure case analysis
+├── models/           # Model definitions
+│   ├── docres.py         # DocRes architecture
+│   └── nafnet.py         # NAFNet architecture
+├── notebooks/        # Exploratory notebooks
+│   ├── augmentation_preview.ipynb  # Visualize Augraphy pipeline stages
+│   ├── training_curves.ipynb       # Loss curves and LR schedule
+│   └── data_exploration.ipynb      # Dataset statistics
+├── train/            # Training scripts
+│   ├── losses.py         # L1, perceptual, and combined loss
+│   ├── scheduler.py      # LR scheduler factory
+│   ├── train_docres.py   # DocRes training loop
+│   └── train_nafnet.py   # NAFNet training loop
+└── checkpoints/      # Saved model weights (gitignored)
+```
