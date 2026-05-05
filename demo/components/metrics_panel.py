@@ -4,7 +4,7 @@
 #
 # Purpose:
 #   Formats PSNR / SSIM / CER values for display in the DocRestore Gradio demo.
-#   Imported by demo/app.py (Shamathmika's).
+#   Imported by demo/app.py.
 #
 # Exports:
 #   build_metrics_panel(psnr, ssim, cer) -> str

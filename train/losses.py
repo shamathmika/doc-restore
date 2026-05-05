@@ -51,7 +51,7 @@ class PerceptualLoss(nn.Module):
 
     Computes MSE between VGG16 features of the restored and clean images.
     Inputs are normalised with ImageNet mean/std before being passed to VGG16.
-    VGG16 weights are frozen — only used for feature extraction.
+    VGG16 weights are frozen; only used for feature extraction.
     """
 
     def __init__(self):
