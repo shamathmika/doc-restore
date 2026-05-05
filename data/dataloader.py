@@ -4,7 +4,7 @@
 #
 # Purpose:
 #   Provides a PyTorch Dataset and DataLoader for the DocRestore training
-#   pipeline. Used by both train_docres.py and train_nafnet.py — the interface
+#   pipeline. Used by both train_docres.py and train_nafnet.py; the interface
 #   here must not change without coordination.
 #
 # Exports:

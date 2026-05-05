@@ -6,20 +6,20 @@
 #   Builds a ShabbyPages-style training dataset without any external accounts.
 #   Downloads arXiv PDFs listed in data/arxiv_papers.json, converts every page
 #   to a clean document image, then runs the Augraphy pipeline to synthesise a
-#   matching degraded counterpart — producing paired clean/degraded images.
+#   matching degraded counterpart - producing paired clean/degraded images.
 #
 #   Output structure:
-#       data/shabby/clean/      — original PDF pages (reference)
-#       data/shabby/degraded/   — Augraphy-degraded counterparts
+#       data/shabby/clean/      - original PDF pages (reference)
+#       data/shabby/degraded/   - Augraphy-degraded counterparts
 #
 #   Filenames follow the pattern:  {arxiv_id}_p{page:03d}.jpg
 #   e.g.  1706.03762_p001.jpg  (page 1 of the Transformer paper)
 #
 # Usage:
-#   # Full run — all papers in arxiv_papers.json (~600+ pairs):
+#   # Full run - all papers in arxiv_papers.json (~600+ pairs):
 #   python data/download_shabby.py
 #
-#   # Test mode — exactly 5 pages, then stop:
+#   # Test mode - exactly 5 pages, then stop:
 #   python data/download_shabby.py --test
 #
 #   # Custom papers file or output dir:
@@ -49,7 +49,7 @@ from augment import apply_degradation, build_augmentation_pipeline
 # ---------------------------------------------------------------------------
 
 ARXIV_PDF_URL  = "https://arxiv.org/pdf/{arxiv_id}"
-DPI_SCALE      = 2.0    # 2× zoom ≈ 150 dpi — legible without being huge
+DPI_SCALE      = 2.0    # 2× zoom ≈ 150 dpi - legible without being huge
 TEST_N         = 5      # pages to generate in test mode
 RETRY_ATTEMPTS = 3
 RETRY_DELAY    = 5      # seconds between retries
@@ -82,7 +82,7 @@ def download_shabby(
     if not papers_path.exists():
         raise FileNotFoundError(
             f"Papers list not found: {papers_path}\n"
-            "Expected data/arxiv_papers.json — make sure it exists."
+            "Expected data/arxiv_papers.json - make sure it exists."
         )
 
     with papers_path.open() as f:
@@ -118,7 +118,7 @@ def download_shabby(
         try:
             pdf_bytes = _fetch_pdf(arxiv_id)
         except Exception as exc:
-            print(f"  SKIP — download failed: {exc}")
+            print(f"  SKIP - download failed: {exc}")
             failed_papers.append(arxiv_id)
             continue
 
@@ -126,7 +126,7 @@ def download_shabby(
         try:
             pages = _pdf_to_images(pdf_bytes, scale=DPI_SCALE)
         except Exception as exc:
-            print(f"  SKIP — PDF render failed: {exc}")
+            print(f"  SKIP - PDF render failed: {exc}")
             failed_papers.append(arxiv_id)
             continue
 

@@ -1,5 +1,5 @@
 """
-download_noisy.py  [ME — Sakshat]
+download_noisy.py
 
 Downloads the NoisyOffice dataset from Kaggle (mariajosecastrobleda/noisyoffice),
 organizes clean/degraded pairs into:
@@ -88,8 +88,8 @@ def _classify_and_copy(extracted_root: Path, dest: Path) -> tuple[int, list[str]
     (number_of_matched_pairs, list_of_mismatch_warnings).
 
     NoisyOffice naming convention (Kaggle release):
-      Font<X>_Clean_<split>.png   — clean originals
-      Font<X>_Noise<type>_<split>.png  — degraded versions
+      Font<X>_Clean_<split>.png   - clean originals
+      Font<X>_Noise<type>_<split>.png  - degraded versions
 
     Matching key: (<font_id>, <split>) e.g. ("Fontfre", "TE")
     Each clean image may have multiple degraded partners (one per noise

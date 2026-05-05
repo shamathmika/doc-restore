@@ -23,15 +23,15 @@ def get_scheduler(optimizer: Optimizer, config: dict):
 
     Supported schedulers:
 
-        "cosine"  — CosineAnnealingLR
+        "cosine": CosineAnnealingLR
             Required keys: epochs
             Decays LR from initial value to 0 over the full training run.
 
-        "step"    — StepLR
+        "step": StepLR
             Required keys: step_size, gamma
             Multiplies LR by gamma every step_size epochs.
 
-        "plateau" — ReduceLROnPlateau
+        "plateau": ReduceLROnPlateau
             No extra keys required (patience fixed at 5).
             Reduces LR when validation loss stops improving.
 
