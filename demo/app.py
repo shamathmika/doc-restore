@@ -47,7 +47,7 @@ except ImportError:
     _INFERENCE_AVAILABLE = False
 
 try:
-    from components.image_panel import build_image_panel
+    from components.image_panel import build_image_panel, compute_demo_metrics
     _IMAGE_PANEL_AVAILABLE = True
 except ImportError:
     _IMAGE_PANEL_AVAILABLE = False
@@ -101,21 +101,20 @@ def restore(degraded_pil, model_name: str) -> tuple:
     model = _get_model(model_name)
     restored_pil = run_inference(model, degraded_pil)
 
-    # Build image panel (side-by-side degraded | restored)
+    # Build panel and compute metrics
     if _IMAGE_PANEL_AVAILABLE:
         panel = build_image_panel(degraded_pil, restored_pil)
+        psnr, ssim, cer = compute_demo_metrics(degraded_pil, restored_pil)
     else:
         panel = restored_pil
-
-    # Compute metrics
-    if _METRICS_AVAILABLE:
-        deg_arr  = np.array(degraded_pil)
-        rest_arr = np.array(restored_pil)
-        psnr = compute_psnr(deg_arr, rest_arr)
-        ssim = compute_ssim(deg_arr, rest_arr)
-        cer  = compute_ocr_cer(deg_arr, rest_arr)
-    else:
-        psnr = ssim = cer = float("nan")
+        if _METRICS_AVAILABLE:
+            deg_arr  = np.array(degraded_pil)
+            rest_arr = np.array(restored_pil)
+            psnr = compute_psnr(deg_arr, rest_arr)
+            ssim = compute_ssim(deg_arr, rest_arr)
+            cer  = compute_ocr_cer(deg_arr, rest_arr)
+        else:
+            psnr = ssim = cer = float("nan")
 
     if _METRICS_PANEL_AVAILABLE:
         metrics_text = build_metrics_panel(psnr, ssim, cer)

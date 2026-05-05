@@ -4,7 +4,7 @@
 #
 # Purpose:
 #   Image display and metric wiring utilities for the DocRestore Gradio demo.
-#   Imported by demo/app.py (Shamathmika's).
+#   Imported by demo/app.py.
 #
 # Exports:
 #   build_image_panel(degraded, restored) -> PIL.Image
