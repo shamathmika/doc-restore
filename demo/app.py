@@ -8,10 +8,10 @@
 #   restored result alongside the input, and reports PSNR / SSIM / CER.
 #
 # Dependencies:
-#   - demo/inference.py                  — load_best_model(), run_inference()
-#   - demo/components/image_panel.py     — build_image_panel()
-#   - demo/components/metrics_panel.py   — build_metrics_panel()
-#   - eval/metrics.py                    — compute_psnr(), compute_ssim(), compute_ocr_cer()
+#   - demo/inference.py                  - load_best_model(), run_inference()
+#   - demo/components/image_panel.py     - build_image_panel()
+#   - demo/components/metrics_panel.py   - build_metrics_panel()
+#   - eval/metrics.py                    - compute_psnr(), compute_ssim(), compute_ocr_cer()
 #   - gradio, Pillow, numpy
 #
 # Usage:
@@ -38,7 +38,7 @@ for _p in [str(_PROJECT_ROOT), str(_DEMO_DIR)]:
 CHECKPOINT_DIR = str(_PROJECT_ROOT / "checkpoints")
 
 # ---------------------------------------------------------------------------
-# Guarded imports — teammate modules may not be pushed yet
+# Guarded imports
 # ---------------------------------------------------------------------------
 try:
     from inference import load_best_model, run_inference
@@ -75,7 +75,6 @@ def _get_model(model_name: str):
     if not _INFERENCE_AVAILABLE:
         raise RuntimeError(
             "demo/inference.py is not available yet. "
-            "Merge Sakshat's code before running inference."
         )
     if model_name not in _models:
         _models[model_name] = load_best_model(model_name, CHECKPOINT_DIR)
@@ -133,7 +132,7 @@ def restore(degraded_pil, model_name: str) -> tuple:
 # ---------------------------------------------------------------------------
 def build_app() -> gr.Blocks:
     with gr.Blocks(title="DocRestore Demo") as app:
-        gr.Markdown("## DocRestore — Document Image Restoration")
+        gr.Markdown("## DocRestore: Document Image Restoration")
         gr.Markdown(
             "Upload a degraded document image. "
             "Select a model and click **Restore** to see the cleaned result."
