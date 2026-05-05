@@ -15,8 +15,8 @@
 #   !python train/train_nafnet.py --config configs/nafnet.yaml
 #
 # Outputs:
-#   checkpoints/nafnet_best.pth          — best val-loss checkpoint
-#   checkpoints/nafnet_loss_log.csv      — per-epoch train/val losses
+#   checkpoints/nafnet_best.pth          - best val-loss checkpoint
+#   checkpoints/nafnet_loss_log.csv      - per-epoch train/val losses
 # =============================================================================
 
 import argparse

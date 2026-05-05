@@ -4,7 +4,7 @@
 #
 # Purpose:
 #   Model loading and inference utilities for the DocRestore Gradio demo.
-#   Imported by demo/app.py (Shamathmika's).
+#   Imported by demo/app.py.
 #
 # Exports:
 #   run_inference(model, image_input) -> PIL.Image
@@ -39,7 +39,7 @@ if str(_PROJECT_ROOT) not in sys.path:
 from data.preprocess import preprocess_image
 
 # ---------------------------------------------------------------------------
-# Lazy imports for model wrappers — teammates' files may not exist yet
+# Lazy imports for model wrappers
 # ---------------------------------------------------------------------------
 try:
     from models.nafnet_wrapper import NAFNetModel
@@ -48,7 +48,7 @@ except ImportError:
     _NAFNET_AVAILABLE = False
 
 try:
-    from models.docres_wrapper import DocResModel   # TODO: Apoorva's file
+    from models.docres_wrapper import DocResModel
     _DOCRES_AVAILABLE = True
 except ImportError:
     _DOCRES_AVAILABLE = False
@@ -170,8 +170,7 @@ def load_best_model(
     elif model_type == "docres":
         if not _DOCRES_AVAILABLE:
             raise ImportError(
-                "models/docres_wrapper.py is not available yet. "
-                "Merge Apoorva's code before loading DocRes."
+                "models/docres_wrapper.py is not available yet."
             )
         model = DocResModel(config_path)
 

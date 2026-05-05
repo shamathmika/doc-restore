@@ -4,10 +4,10 @@
 #
 # Purpose:
 #   Self-contained NAFNet architecture and a NAFNetModel wrapper class that
-#   matches the interface of DocResModel (Apoorva's) so both can be swapped
+#   matches the interface of DocResModel so both can be swapped
 #   in training and evaluation scripts without any changes.
 #
-# Architecture: NAFNet — Nonlinear Activation Free Network
+# Architecture: NAFNet: Nonlinear Activation Free Network
 #   Chen et al., "Simple Baselines for Image Restoration", ECCV 2022
 #   github.com/megvii-research/NAFNet
 #   Implemented directly to keep the project self-contained on Colab.
@@ -15,7 +15,7 @@
 # Public API:
 #   NAFNetModel(config_path)
 #       .load_weights(checkpoint_path)
-#       .forward(x)                  — same signature as DocResModel
+#       .forward(x)                  - same signature as DocResModel
 #       .save_checkpoint(path, epoch, loss)
 # =============================================================================
 
@@ -177,7 +177,7 @@ class _NAFNet(nn.Module):
 
 
 # ---------------------------------------------------------------------------
-# Public wrapper — same interface as DocResModel (Apoorva's)
+# Public wrapper - same interface as DocResModel
 # ---------------------------------------------------------------------------
 
 class NAFNetModel(nn.Module):
@@ -200,7 +200,7 @@ class NAFNetModel(nn.Module):
         """
         Args:
             config_path: Path to a YAML config (e.g. configs/nafnet.yaml).
-                         Architecture keys are optional — sensible defaults
+                         Architecture keys are optional; sensible defaults
                          are used when absent (width=32, middle_blks=12,
                          enc_blks=[2,2,4,8], dec_blks=[2,2,2,2]).
         """

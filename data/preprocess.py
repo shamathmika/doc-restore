@@ -1,5 +1,5 @@
 """
-preprocess.py  [ME — Sakshat]
+preprocess.py
 
 Image preprocessing utilities for DocRestore.
 
@@ -23,7 +23,7 @@ Usage
     preprocess_dataset("data/noisy/clean",    "data/noisy_pp/clean")
     preprocess_dataset("data/noisy/degraded", "data/noisy_pp/degraded")
 
-    # CLI — process a folder in one shot
+    # CLI - process a folder in one shot
     python data/preprocess.py --input data/noisy/clean \
                                --output data/noisy_pp/clean \
                                --size 256 256
@@ -140,7 +140,7 @@ def preprocess_dataset(
             print(f"  [ERR] {img_path.name}: {exc}")
 
     print(
-        f"\n[preprocess] Done — {processed} saved, {errors} errors "
+        f"\n[preprocess] Done - {processed} saved, {errors} errors "
         f"(output_size={output_size}, dir={output_dir})"
     )
 

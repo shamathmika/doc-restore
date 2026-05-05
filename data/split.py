@@ -95,7 +95,7 @@ def split_dataset(
 
     if unmatched_clean or unmatched_degraded:
         print(
-            f"[split] WARNING — {len(unmatched_clean)} clean-only and "
+            f"[split] WARNING - {len(unmatched_clean)} clean-only and "
             f"{len(unmatched_degraded)} degraded-only images will be skipped."
         )
 
