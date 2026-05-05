@@ -38,3 +38,6 @@ augraphy_cache/
 
 # Logs
 *.log
+
+# Local-only scratch files (smoke tests, experiments, notes)
+notforgit/
