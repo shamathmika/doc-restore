@@ -1,6 +1,6 @@
 # DocRestore: Document Image Restoration for OCR Readability
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/shamathmika/doc-restore/blob/main/notebooks/data_exploration.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/shamathmika/doc-restore/blob/main/notebooks/train_colab.ipynb)
 
 An end-to-end deep learning system that restores degraded scanned and printed document images into clean, high-contrast, machine-readable versions. Degradations handled include coffee stains, ink bleed, wrinkles, fold marks, photocopy artifacts, and uneven contrast.
 
@@ -107,6 +107,7 @@ python demo/app.py --share  # Colab (generates public link)
 
 | Notebook | Description | Open |
 |----------|-------------|------|
+| `notebooks/train_colab.ipynb` | **Start here** - full training pipeline on Colab | [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/shamathmika/doc-restore/blob/main/notebooks/train_colab.ipynb) |
 | `notebooks/augmentation_preview.ipynb` | Visualize Augraphy degradation stages | [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/shamathmika/doc-restore/blob/main/notebooks/augmentation_preview.ipynb) |
 | `notebooks/training_curves.ipynb` | Loss curves and LR schedule | [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/shamathmika/doc-restore/blob/main/notebooks/training_curves.ipynb) |
 | `notebooks/data_exploration.ipynb` | Dataset statistics | [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/shamathmika/doc-restore/blob/main/notebooks/data_exploration.ipynb) |
