@@ -22,7 +22,7 @@ data/noisy/
 data/*.csv
 
 # Model checkpoints and weights (too large for git)
-checkpoints/
+checkpoints/*.pth
 
 # Environment variables
 .env
