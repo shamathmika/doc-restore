@@ -43,12 +43,13 @@ Scanned and photographed document images frequently suffer from degradations - i
 
 ## Results
 
-| Model | PSNR | SSIM | CER |
-|-------|------|------|-----|
-| DocRes | - | - | - |
-| NAFNet | - | - | - |
+| Model | PSNR (dB) | SSIM | CER |
+|-------|-----------|------|-----|
+| DocRes | 30.30 | 0.958 | 1.78 |
+| NAFNet | 29.19 | 0.935 | 1.08 |
 
-*To be filled in after evaluation.*
+Evaluated on 90 test images (10% hold-out of the synthetic ShabbyPages dataset).
+PSNR and SSIM are computed against clean reference images. CER is the OCR character error rate via Tesseract relative to the clean reference; values above 1.0 indicate the restored output is harder to OCR than the clean reference, likely due to over-smoothing.
 
 ---
 
