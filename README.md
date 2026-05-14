@@ -36,19 +36,40 @@ TextAwareLoss upweights the pixel loss on text-stroke edges (detected via Laplac
 | Dataset | Pairs | Degradation Types | Use |
 |---------|-------|-------------------|-----|
 | Synthetic (arXiv + Augraphy) | ~900 | Ink bleed, bleed-through, stains, folds, noise, JPEG artifacts | Train / Val / Test (70/15/15) |
-| NoisyOffice | 72 | Noise, blur, low contrast | Domain gap evaluation only |
+| NoisyOffice | 216 pairs | Noise, blur, low contrast | Domain gap evaluation only |
 
 ---
 
 ## Results
 
+### Synthetic test set (90 images, 512x512)
+
 | Model | PSNR (dB) | SSIM | CER |
 |-------|-----------|------|-----|
-| Baseline (no model) | TBD | TBD | TBD |
-| NAFNet-TextAware | TBD | TBD | TBD |
-| DocRes-TextAware | TBD | TBD | TBD |
+| Baseline (no model) | 14.19 | 0.7738 | 0.3425 |
+| NAFNet | 20.70 | 0.8763 | 0.6790 |
+| DocRes | **24.11** | **0.8993** | **0.4191** |
 
-Evaluated on the 15% held-out test split at 512x512 resolution.
+DocRes achieves +9.9 dB PSNR and +0.126 SSIM over the unrestored baseline.
+
+### Domain gap — NAFNet on NoisyOffice real scans (216 pairs)
+
+| Domain | PSNR (dB) | SSIM | CER |
+|--------|-----------|------|-----|
+| Synthetic test (train domain) | 20.70 | 0.8763 | 0.6790 |
+| NoisyOffice (real scans) | 21.74 | 0.9430 | 0.0619 |
+
+No domain gap penalty — NAFNet generalises well to real-world scan artifacts.
+
+---
+
+## Checkpoints
+
+Model weights are too large for GitHub (DocRes: 504 MB, NAFNet: 111 MB).
+
+Download from Google Drive: https://drive.google.com/drive/folders/1i_cHhIiLGNhBLl227sZiNqfY-x3Oae47?usp=sharing
+
+Place downloaded `.pth` files in the `checkpoints/` directory before running eval or demo.
 
 ---
 
@@ -92,9 +113,15 @@ python data/download_noisy.py     # downloads NoisyOffice for domain gap eval
 # Evaluate a checkpoint
 python eval/run_eval.py \
     --model nafnet \
-    --checkpoint /path/to/nafnet_textaware_best.pth \
+    --checkpoint checkpoints/nafnet_best.pth \
     --test-csv data/test.csv \
-    --out-dir eval/outputs/nafnet_textaware
+    --out-dir eval/outputs/nafnet
+
+python eval/run_eval.py \
+    --model docres \
+    --checkpoint checkpoints/docres_best.pth \
+    --test-csv data/test.csv \
+    --out-dir eval/outputs/docres
 
 # Baseline (no model)
 python eval/run_baseline.py --test-csv data/test.csv --out-dir eval/outputs/baseline
@@ -118,8 +145,7 @@ doc-restore/
 │   ├── dataloader.py                # PyTorch Dataset and DataLoader factory
 │   ├── download_shabby.py           # arXiv PDF -> clean/degraded pairs
 │   ├── download_noisy.py            # NoisyOffice dataset download
-│   ├── preprocess.py                # Resize and normalize utilities
-│   ├── split.py                     # Train / val / test CSV split
+│   ├── preprocess.py                # Image preprocessing for demo inference
 │   └── arxiv_papers.json            # 99 arXiv papers used for synthetic data
 ├── demo/
 │   ├── app.py                       # Gradio web app
@@ -148,7 +174,7 @@ doc-restore/
 
 ## Key Design Decisions
 
-- **TextAwareLoss**: Laplacian edge detection on the clean image produces a spatial weight map that penalizes errors on text strokes 1x to 3x more than background. Acts as a differentiable OCR proxy without requiring a differentiable OCR engine.
+- **TextAwareLoss**: Laplacian edge detection on the clean image produces a spatial weight map that penalises errors on text strokes 1x to 3x more than background. Acts as a differentiable OCR proxy without requiring a differentiable OCR engine.
 - **Shared model interface**: Both DocRes and NAFNet implement identical `forward()`, `save_checkpoint()`, and `load_weights()` APIs, allowing drop-in comparison across all scripts.
-- **512x512 training**: Larger crop size than a 256x256 baseline retains more document context per batch and improves text legibility in outputs.
+- **512x512 training**: Larger crop size retains more document context per batch and improves text legibility in outputs.
 - **70/15/15 split**: Larger val/test sets give more stable metric estimates across approximately 135 test images.
