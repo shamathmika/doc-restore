@@ -42,7 +42,7 @@ if str(_ROOT) not in sys.path:
 from eval.metrics import compute_psnr, compute_ssim, compute_ocr_cer
 
 _DEVICE  = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-_INFER_SIZE = (256, 256)   # must match training config input_size
+_INFER_SIZE = (512, 512)   # must match training config input_size
 _GRID_ROWS  = 10           # number of test images in the visual grid
 
 
@@ -174,7 +174,11 @@ def evaluate(
 
         psnr = compute_psnr(clean_arr, restored_arr)
         ssim = compute_ssim(clean_arr, restored_arr)
-        cer  = compute_ocr_cer(clean_arr, restored_arr)
+        # CER at full original resolution — Tesseract fails on 256×256 text
+        orig_size     = clean_pil.size   # (W, H)
+        restored_full = np.array(Image.fromarray(restored_arr).resize(orig_size, Image.LANCZOS))
+        clean_full    = np.array(clean_pil)
+        cer           = compute_ocr_cer(clean_full, restored_full)
 
         records.append({
             "degraded_path": row["degraded_path"],

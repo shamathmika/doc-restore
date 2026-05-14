@@ -112,7 +112,7 @@ def _val_epoch(
 # Main training function
 # ---------------------------------------------------------------------------
 
-def train(config_path: str) -> None:
+def train(config_path: str, run_name: str | None = None, checkpoint_dir: str | None = None) -> None:
     torch.manual_seed(SEED)
 
     cfg    = _load_config(config_path)
@@ -127,25 +127,32 @@ def train(config_path: str) -> None:
     # -- Data ----------------------------------------------------------------
     # num_workers=0 required on Windows (spawn can't pickle lambdas); Colab uses 2
     num_workers = 0 if sys.platform == "win32" else 2
+    input_size  = cfg.get("input_size", 512)
     train_loader = get_dataloader(
         cfg["train_csv"],
         batch_size  = cfg["batch_size"],
         shuffle     = True,
         num_workers = num_workers,
+        input_size  = input_size,
+        crop_mode   = "random_crop",
     )
     val_loader = get_dataloader(
         cfg["val_csv"],
         batch_size  = cfg["batch_size"],
         shuffle     = False,
         num_workers = num_workers,
+        input_size  = input_size,
+        crop_mode   = "resize",
     )
     print(f"[train_docres] Train batches={len(train_loader)}  "
           f"Val batches={len(val_loader)}")
 
     # -- Loss ----------------------------------------------------------------
     loss_kwargs = {}
-    if cfg.get("loss") == "combined":
+    if cfg.get("loss") in ("combined", "text_aware_combined"):
         loss_kwargs["lambda_perceptual"] = cfg.get("lambda_perceptual", 0.1)
+    if cfg.get("loss") == "text_aware_combined":
+        loss_kwargs["lambda_text"] = cfg.get("lambda_text", 0.5)
     criterion = get_loss(cfg["loss"], **loss_kwargs).to(device)
 
     # -- Optimizer / scheduler -----------------------------------------------
@@ -153,14 +160,17 @@ def train(config_path: str) -> None:
     scheduler = get_scheduler(optimizer, cfg)
 
     # -- Outputs -------------------------------------------------------------
-    ckpt_dir  = Path(cfg.get("checkpoint_dir", "checkpoints"))
+    # checkpoint_dir: CLI arg overrides YAML, which overrides default "checkpoints/"
+    ckpt_dir  = Path(checkpoint_dir or cfg.get("checkpoint_dir", "checkpoints"))
     ckpt_dir.mkdir(parents=True, exist_ok=True)
-    best_ckpt = ckpt_dir / "docres_best.pth"
-    log_path  = ckpt_dir / "docres_loss_log.csv"
+    name      = run_name or "docres"
+    best_ckpt = ckpt_dir / f"{name}_best.pth"
+    log_path  = ckpt_dir / f"{name}_loss_log.csv"
 
     log_fh, log_writer = _open_log(log_path)
     best_val_loss = float("inf")
 
+    print(f"[train_docres] Run    : {name}")
     print(f"[train_docres] Training for {cfg['epochs']} epoch(s) ...")
     print(f"[train_docres] Loss={cfg['loss']}  "
           f"LR={cfg['learning_rate']}  Scheduler={cfg['scheduler']}")
@@ -209,5 +219,15 @@ if __name__ == "__main__":
         default="configs/docres.yaml",
         help="Path to training config YAML (default: configs/docres.yaml)",
     )
+    parser.add_argument(
+        "--run-name",
+        default=None,
+        help="Override checkpoint/log basename (default: 'docres')",
+    )
+    parser.add_argument(
+        "--checkpoint-dir",
+        default=None,
+        help="Override checkpoint output directory (default: from config YAML)",
+    )
     args = parser.parse_args()
-    train(args.config)
+    train(args.config, run_name=args.run_name, checkpoint_dir=args.checkpoint_dir)

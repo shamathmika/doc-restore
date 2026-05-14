@@ -26,7 +26,7 @@ if str(_ROOT) not in sys.path:
 
 from eval.metrics import compute_psnr, compute_ssim, compute_ocr_cer
 
-_INFER_SIZE = (256, 256)
+_INFER_SIZE = (512, 512)
 
 
 def run_baseline(test_csv: str = "data/test.csv", out_dir: str = "eval/outputs/baseline") -> None:
@@ -39,16 +39,20 @@ def run_baseline(test_csv: str = "data/test.csv", out_dir: str = "eval/outputs/b
     records = []
 
     for idx, row in df.iterrows():
-        degraded_arr = np.array(
-            Image.open(row["degraded_path"]).convert("RGB").resize(_INFER_SIZE, Image.LANCZOS)
-        )
-        clean_arr = np.array(
-            Image.open(row["clean_path"]).convert("RGB").resize(_INFER_SIZE, Image.LANCZOS)
-        )
+        clean_pil    = Image.open(row["clean_path"]).convert("RGB")
+        degraded_pil = Image.open(row["degraded_path"]).convert("RGB")
+
+        # PSNR / SSIM at 256×256 (matches model inference resolution)
+        clean_arr    = np.array(clean_pil.resize(_INFER_SIZE, Image.LANCZOS))
+        degraded_arr = np.array(degraded_pil.resize(_INFER_SIZE, Image.LANCZOS))
 
         psnr = compute_psnr(clean_arr, degraded_arr)
         ssim = compute_ssim(clean_arr, degraded_arr)
-        cer  = compute_ocr_cer(clean_arr, degraded_arr)
+
+        # CER at full original resolution — Tesseract fails on 256×256 text
+        clean_full    = np.array(clean_pil)
+        degraded_full = np.array(degraded_pil)
+        cer           = compute_ocr_cer(clean_full, degraded_full)
 
         records.append({
             "degraded_path": row["degraded_path"],
