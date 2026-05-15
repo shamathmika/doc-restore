@@ -53,7 +53,7 @@ try:
 except ImportError:
     _DOCRES_AVAILABLE = False
 
-_INPUT_SIZE = (256, 256)   # must match training config input_size
+_INPUT_SIZE = (512, 512)   # must match training config input_size
 
 
 # ---------------------------------------------------------------------------
@@ -88,26 +88,22 @@ def _tensor_to_pil(tensor: torch.Tensor) -> Image.Image:
 
 def run_inference(model: torch.nn.Module, image_input: Image.Image) -> Image.Image:
     """
-    Run restoration inference on a single image.
-
-    Args:
-        model:       A loaded NAFNetModel or DocResModel (any nn.Module whose
-                     forward() accepts (1, 3, H, W) float32 tensors in [0, 1]
-                     and returns the same shape).
-        image_input: Degraded document image as a PIL Image (RGB or any mode).
-
-    Returns:
-        Restored document image as a PIL Image (RGB).
+    Resize to _INPUT_SIZE, run model, upscale output back to original resolution.
+    Upscaling before OCR matches how the eval script computes CER.
     """
+    if image_input.mode != "RGB":
+        image_input = image_input.convert("RGB")
+
+    orig_size = image_input.size  # (W, H)
     device = next(model.parameters()).device
 
     inp = _pil_to_tensor_from_pil(image_input).to(device)
-
     model.eval()
     with torch.no_grad():
         out = model(inp)
 
-    return _tensor_to_pil(out)
+    restored_small = _tensor_to_pil(out)
+    return restored_small.resize(orig_size, Image.LANCZOS)
 
 
 def load_best_model(

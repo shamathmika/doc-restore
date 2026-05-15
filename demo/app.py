@@ -3,16 +3,13 @@
 # Owner: Shamathmika
 #
 # Purpose:
-#   Gradio web demo for DocRestore. Accepts a degraded document image,
-#   runs inference with a selected model (DocRes or NAFNet), displays the
-#   restored result alongside the input, and reports PSNR / SSIM / CER.
+#   Gradio web demo for DocRestore. Accepts a degraded document image (crop
+#   at native resolution for best results), runs inference with a selected
+#   model, and shows the restored output alongside OCR text comparison.
 #
 # Dependencies:
-#   - demo/inference.py                  - load_best_model(), run_inference()
-#   - demo/components/image_panel.py     - build_image_panel()
-#   - demo/components/metrics_panel.py   - build_metrics_panel()
-#   - eval/metrics.py                    - compute_psnr(), compute_ssim(), compute_ocr_cer()
-#   - gradio, Pillow, numpy
+#   - demo/inference.py   - load_best_model(), run_inference()
+#   - gradio, Pillow, pytesseract
 #
 # Usage:
 #   python demo/app.py           # opens local URL
@@ -24,7 +21,6 @@ import sys
 from pathlib import Path
 
 import gradio as gr
-import numpy as np
 
 # ---------------------------------------------------------------------------
 # Resolve paths and patch sys.path before guarded imports
@@ -46,23 +42,6 @@ try:
 except ImportError:
     _INFERENCE_AVAILABLE = False
 
-try:
-    from components.image_panel import build_image_panel
-    _IMAGE_PANEL_AVAILABLE = True
-except ImportError:
-    _IMAGE_PANEL_AVAILABLE = False
-
-try:
-    from components.metrics_panel import build_metrics_panel
-    _METRICS_PANEL_AVAILABLE = True
-except ImportError:
-    _METRICS_PANEL_AVAILABLE = False
-
-try:
-    from eval.metrics import compute_psnr, compute_ssim, compute_ocr_cer
-    _METRICS_AVAILABLE = True
-except ImportError:
-    _METRICS_AVAILABLE = False
 
 # ---------------------------------------------------------------------------
 # Lazy model cache
@@ -85,46 +64,21 @@ def _get_model(model_name: str):
 # Gradio callback
 # ---------------------------------------------------------------------------
 def restore(degraded_pil, model_name: str) -> tuple:
-    """
-    Gradio callback: receives a PIL image, returns (panel_or_restored, metrics_text).
-
-    Args:
-        degraded_pil: Uploaded image from Gradio Image component (PIL).
-        model_name:   "DocRes" or "NAFNet".
-
-    Returns:
-        Tuple of (PIL image, metrics str).
-    """
     if degraded_pil is None:
-        return None, "Upload an image first."
+        return None, "", ""
 
     model = _get_model(model_name)
     restored_pil = run_inference(model, degraded_pil)
 
-    # Build image panel (side-by-side degraded | restored)
-    if _IMAGE_PANEL_AVAILABLE:
-        panel = build_image_panel(degraded_pil, restored_pil)
-    else:
-        panel = restored_pil
+    try:
+        import pytesseract
+        deg_ocr  = pytesseract.image_to_string(degraded_pil)
+        rest_ocr = pytesseract.image_to_string(restored_pil)
+    except Exception as e:
+        deg_ocr  = f"OCR unavailable: {e}"
+        rest_ocr = ""
 
-    # Compute metrics
-    if _METRICS_AVAILABLE:
-        deg_arr  = np.array(degraded_pil)
-        rest_arr = np.array(restored_pil)
-        psnr = compute_psnr(deg_arr, rest_arr)
-        ssim = compute_ssim(deg_arr, rest_arr)
-        cer  = compute_ocr_cer(deg_arr, rest_arr)
-    else:
-        psnr = ssim = cer = float("nan")
-
-    if _METRICS_PANEL_AVAILABLE:
-        metrics_text = build_metrics_panel(psnr, ssim, cer)
-    else:
-        def _fmt(v):
-            return f"{v:.4f}" if not np.isnan(v) else "N/A"
-        metrics_text = f"PSNR : {_fmt(psnr)}\nSSIM : {_fmt(ssim)}\nCER  : {_fmt(cer)}"
-
-    return panel, metrics_text
+    return restored_pil, deg_ocr, rest_ocr
 
 
 # ---------------------------------------------------------------------------
@@ -141,13 +95,13 @@ def build_app() -> gr.Blocks:
         with gr.Row():
             with gr.Column(scale=1):
                 input_img = gr.Image(
-                    label="Upload Degraded Document",
+                    label="Degraded Input",
                     type="pil",
                     image_mode="RGB",
                 )
                 model_selector = gr.Radio(
                     choices=["DocRes", "NAFNet"],
-                    value="DocRes",
+                    value="NAFNet",
                     label="Model",
                 )
                 run_btn = gr.Button("Restore", variant="primary")
@@ -157,16 +111,15 @@ def build_app() -> gr.Blocks:
                     label="Restored Output",
                     type="pil",
                 )
-                metrics_box = gr.Textbox(
-                    label="Metrics",
-                    lines=4,
-                    interactive=False,
-                )
+
+        with gr.Row():
+            deg_ocr_box  = gr.Textbox(label="OCR: Degraded Input",  lines=12, interactive=False)
+            rest_ocr_box = gr.Textbox(label="OCR: Restored Output", lines=12, interactive=False)
 
         run_btn.click(
             fn=restore,
             inputs=[input_img, model_selector],
-            outputs=[output_img, metrics_box],
+            outputs=[output_img, deg_ocr_box, rest_ocr_box],
         )
 
     return app
