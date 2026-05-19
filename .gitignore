@@ -42,6 +42,6 @@ augraphy_cache/
 # Local-only scratch files (smoke tests, experiments, notes)
 notforgit/
 
-# Editable report sources (PDF is the canonical version in the repo)
-*.docx
+# Word backup and lock files (the main docx is tracked)
+*.bak.docx
 ~$*
